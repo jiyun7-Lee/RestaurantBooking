@@ -2,6 +2,7 @@
 #include "booking_scheduler.cpp"
 #include "test_sms_sender.cpp"
 #include "test_email_sender.cpp"
+#include "SundayBooking.cpp"
 
 using namespace testing;
 
@@ -110,11 +111,26 @@ TEST_F(BookingItest, ExistEmail) {
 }
 
 TEST_F(BookingItest, Sunday) {
+	BookingScheduler* sunbookingScheduler = new SundayBookingScheduler{ CAPA_PER_HOUR };
 
+	try {
+		Schedule* schedule = new Schedule{ ON_THE_HOUR,UNDER_CAPACITY,CUSTOMER_WITH_MAIL };
+		sunbookingScheduler->addSchedule(schedule);
+		FAIL();
+	}
+	catch (std::runtime_error& e)
+	{
+		EXPECT_EQ(string{ e.what() }, string{ "Booking system is not available on sunday" });
+	}
 }
 
 TEST_F(BookingItest, notSunday) {
+	BookingScheduler* monbookingScheduler = new MondayBookingScheduler{ CAPA_PER_HOUR };
 
+	Schedule* schedule = new Schedule{ ON_THE_HOUR,UNDER_CAPACITY,CUSTOMER_WITH_MAIL };
+	monbookingScheduler->addSchedule(schedule);
+
+	EXPECT_EQ(true, monbookingScheduler->hasSchedule(schedule));
 }
 
 int main() {
